@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>AM 解调 ARG · A is for Amplitude Modulation</title>
+<div id="codeBox">
+  <div class="box" id="b0"></div>
+  <div class="box" id="b1"></div>
+  <div class="box" id="b2"></div>
+  <div class="box" id="b3"></div>
+  <div class="box" id="b4"></div>
+  <div class="box" id="b5"></div>
+</div>
+<div id="keyboard"></div>
+<style>
+#keyboard{
+  margin-top:20px;
+  text-align:center;
+}
+
+#keyboard button{
+  margin:3px;
+  padding:8px 10px;
+  background:black;
+  border:1px solid #00ff66;
+  color:#00ff66;
+  cursor:pointer;
+}
+#codeBox{
+  display:flex;
+  gap:10px;
+  margin:20px 0;
+  justify-content:center;
+}
+
+.box{
+  width:42px;
+  height:42px;
+  border:1px solid #00ff66;
+  color:#00ff66;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+}
+  :root {
+    --bg: #090c0d;
+    --panel: #111618;
+    --panel-2: #0a0d0e;
+    --border: #004411;
+    --border-lit: #00ff66;
+    --grid: rgba(0, 255, 102, 0.02);
+    --text: #00ff66;
+    --text-muted: #00aa44;
+    --text-dim: #003311;
+    --amber: #ffcc00;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: radial-gradient(ellipse at 50% -10%, #001a08 0%, var(--bg) 65%);
+    color: var(--text);
+    font-family: 'Courier New', Courier, monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    user-select: none;
+  }
+
+  /* 🎯 保持统一的荧光绿大标题 */
+  .main-title {
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text);
+    text-shadow: 0 0 15px rgba(0, 255, 102, 0.6), 0 0 30px rgba(0, 255, 102, 0.2);
+    margin-bottom: 30px;
+    text-align: center;
+  }
+
+  /* 左右双栏容器 */
+  .container {
+    display: flex;
+    width: 100%;
+    max-width: 1100px;
+    gap: 24px;
+  }
+
+  @media (max-width: 900px) {
+    .container { flex-direction: column; }
+    .left, .right { width: 100% !important; }
+  }
+
+  .left, .right {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* 模块面板外壳 */
+  .scope-card {
+    background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 0 30px rgba(0, 255, 102, 0.02);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  h3 {
+    font-size: 16px;
+    letter-spacing: 1px;
+    color: #ffffff;
+    border-left: 3px solid var(--border-lit);
+    padding-left: 10px;
+    text-transform: uppercase;
+  }
+
+  h4 {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 10px;
+  }
+
+  /* 示波器屏幕效果 */
+  .canvas-container {
+    position: relative;
+    background: 
+      repeating-linear-gradient(0deg, var(--grid) 0px, var(--grid) 1px, transparent 1px, transparent 20px),
+      repeating-linear-gradient(90deg, var(--grid) 0px, var(--grid) 1px, transparent 1px, transparent 20px),
+      #030705;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .canvas-container::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 3px);
+    pointer-events: none;
+    opacity: 0.3;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: transparent;
+  }
+
+  p {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* 代码表达式与展示框 */
+  pre {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border);
+    padding: 14px;
+    border-radius: 4px;
+    color: var(--amber);
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-x: auto;
+  }
+
+  textarea {
+    width: 100%;
+    height: 120px;
+    background: #000000;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+  }
+  textarea:focus {
+    border-color: var(--border-lit);
+    box-shadow: 0 0 10px rgba(0, 255, 102, 0.1);
+  }
+
+  /* 按钮样式升级 */
+  button {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    font-size: 14px;
+    letter-spacing: 1px;
+    background: #000000;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 12px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+  }
+
+  button:hover {
+    color: #031408;
+    background: var(--border-lit);
+    border-color: var(--border-lit);
+    box-shadow: 0 0 20px rgba(0, 255, 102, 0.4);
+  }
+  button:active {
+    transform: scale(0.98);
+  }
+</style>
+</head>
+
+<body data-index="0">
+
+<div class="main-title">A is for Amplitude Modulation</div>
+
+<div class="container">
+
+  <div class="left">
+    <div class="scope-card">
+      <h3>📡 接收信号 s(t)</h3>
+      <div class="canvas-container">
+        <canvas id="canvasS" width="500" height="300"></canvas>
+      </div>
+      <p>📊 s(t) 表达式：</p>
+      <pre id="sexpr"></pre>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="scope-card">
+      <h3>🧠 输入解调 m(t)</h3>
+      <textarea id="input">// if(t < 1) return a+b*t;
+// else if(t > 1) return a+b*t;</textarea>
+      
+      <button onclick="drawM()">生成 m(t)</button>
+
+      <h4>📊 解调输出波形 m(t)</h4>
+      <div class="canvas-container">
+        <canvas id="canvasM" width="500" height="300"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const rows = ["QWERTYUIOP","ASDFGHJKL","ZXCVBNM"];
+
+const kb = document.getElementById("keyboard");
+
+if(kb){
+  rows.forEach(r=>{
+    const div = document.createElement("div");
+    r.split("").forEach(ch=>{
+      const b = document.createElement("button");
+      b.innerText = ch;
+      b.onclick = ()=>pressKey(ch);
+      div.appendChild(b);
+    });
+    kb.appendChild(div);
+  });
+}
+// ==================== 保持原有逻辑不变 ====================
+function m_hidden(t){
+    if(t<1) return 3*t;
+    else if(t<2) return 6-3*t;
+    else if(t<3) return 3*t-6;
+    else if(t<4) return 12-3*t;
+    else return 0;
+}
+
+let fc = 25;
+
+function m(t){
+    return m_hidden(t);
+}
+
+function s(t){
+    return (1 + m(t)) * Math.cos(2*Math.PI*fc*t);
+}
+
+function updateExpression(){
+    let expr =
+`s(t) = 0 ≤ t < 1 : (1 + 3t) cos(2π f_c t)
+       1 ≤ t < 2 : (7 − 3t) cos(2π f_c t)
+       2 ≤ t < 3 : (3t − 5) cos(2π f_c t)
+       3 ≤ t < 4 : (13 − 3t) cos(2π f_c t)
+`;
+    document.getElementById("sexpr").innerText = expr;
+}
+
+// ==================== 优化的绘图函数（带发光感） ====================
+function draw(canvas, func, color){
+    let ctx = canvas.getContext("2d");
+    ctx.clearRect(0,0,500,300);
+    
+    // 背景细网格线
+    ctx.strokeStyle = "rgba(0, 255, 102, 0.05)";
+    ctx.lineWidth = 1;
+    for(let i=0;i<500;i+=50){
+        ctx.beginPath();
+        ctx.moveTo(i,0);
+        ctx.lineTo(i,300);
+        ctx.stroke();
+    }
+
+    // 中心基准线
+    ctx.strokeStyle = "rgba(0, 255, 102, 0.2)";
+    ctx.beginPath();
+    ctx.moveTo(0,150);
+    ctx.lineTo(500,150);
+    ctx.stroke();
+
+    // 绘制主信号曲线
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    
+    // 添加霓虹微光视觉缓冲
+    ctx.shadowBlur = 4;
+    ctx.shadowColor = color;
+    
+    ctx.beginPath();
+
+    let N = 500;
+    for(let i=0;i<N;i++){
+        let t = i/125;
+        let y = func(t);
+        let x = i;
+        let yy = 150 - y*20;
+
+        if(i===0) ctx.moveTo(x,yy);
+        else ctx.lineTo(x,yy);
+    }
+
+    ctx.stroke();
+    // 重置阴影避免影响其他绘制
+    ctx.shadowBlur = 0; 
+}
+
+function drawS(){
+    // 将 s(t) 曲线配色调为契合黑底的亮黄色/琥珀色
+    draw(document.getElementById("canvasS"), s, "#ffcc00");
+    updateExpression();
+}
+
+function drawM(){
+    let code = document.getElementById("input").value;
+    try {
+        let f = new Function("t", code);
+        // 将 m(t) 调为标准荧光绿
+        draw(document.getElementById("canvasM"), f, "#00ff66");
+    } catch(e){
+        alert("函数错误");
+    }
+}
+
+// 首次加载自动初始化
+drawS();
+drawM();
+</script>
+<script>
+const pageList = [
+  "A is for Amplitude Modulation.html",
+  "B is for Binary.html",
+  "C is for Convolution.html",
+  "D is for DIscrete Sampling.html",
+  "E is for Error Correcting.html",
+  "F is for Fourier Transform.html"
+];
+
+const answer = ["M","A","T","A","N","E"];
+
+// 当前页面编号（0~5）
+const pageIndex = Number(document.body.dataset.index);
+if (pageIndex === 0 && !sessionStorage.getItem("started")) {
+  localStorage.removeItem("arg_code");
+  sessionStorage.setItem("started", "1");
+}
+
+// 读取已存密码
+let code = JSON.parse(localStorage.getItem("arg_code") || "[]");
+
+// 初始化UI
+function renderBoxes(){
+  for(let i=0;i<6;i++){
+    const el = document.getElementById("b"+i);
+    if(el) el.innerText = code[i] || "";
+  }
+}
+
+// 错误提示
+function error(){
+  alert("Error");
+}
+
+// 点击字母
+function pressKey(letter){
+  const expected = answer[pageIndex];
+
+  if(letter !== expected){
+    error();
+    return;
+  }
+
+  code[pageIndex] = letter;
+  localStorage.setItem("arg_code", JSON.stringify(code));
+  renderBoxes();
+
+  setTimeout(()=>{
+    if(pageIndex < 5){
+      window.location.href = pageList[pageIndex + 1];
+    } else {
+      window.location.href = "Appreciation.html";
+    }
+  }, 500);
+}
+
+window.onload = renderBoxes;
+</script>
+</body>
+</html>

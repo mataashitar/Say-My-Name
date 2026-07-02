@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>F is for Fourier Transform</title>
+<div id="codeBox">
+  <div class="box" id="b0"></div>
+  <div class="box" id="b1"></div>
+  <div class="box" id="b2"></div>
+  <div class="box" id="b3"></div>
+  <div class="box" id="b4"></div>
+  <div class="box" id="b5"></div>
+<div id="keyboard"></div>
+</div>
+<style>
+#codeBox{
+  display:flex;
+  gap:10px;
+  margin:20px 0;
+  justify-content:center;
+}
+
+.box{
+  width:42px;
+  height:42px;
+  border:1px solid #00ff66;
+  color:#00ff66;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+}
+  :root {
+    --bg: #090c0d;
+    --panel: #111618;
+    --panel-2: #0a0d0e;
+    --border: #004411;
+    --border-lit: #00ff66;
+    --grid: rgba(0, 255, 102, 0.025);
+    --text: #00ff66;
+    --text-muted: #00aa44;
+    --text-dim: #003311;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+#keyboard{
+  margin-top:20px;
+  text-align:center;
+}
+
+#keyboard button{
+  margin:3px;
+  padding:8px 10px;
+  background:black;
+  border:1px solid #00ff66;
+  color:#00ff66;
+  cursor:pointer;
+}
+  body {
+    background: radial-gradient(ellipse at 50% -10%, #001a08 0%, var(--bg) 65%);
+    color: var(--text);
+    font-family: 'Courier New', Courier, monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column; 
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    user-select: none;
+  }
+
+  /* 🎯 标题颜色已同步调成与其他字一样的荧光绿 (--text) */
+  .main-title {
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text);
+    text-shadow: 0 0 15px rgba(0, 255, 102, 0.6), 0 0 30px rgba(0, 255, 102, 0.2);
+    margin-bottom: 40px;
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+  }
+
+  /* 主内容横向布局容器 */
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  @media (max-width: 900px) {
+    .container { flex-direction: column; gap: 40px; }
+    .arrow-operator { transform: rotate(90deg); margin: 10px 0; }
+  }
+
+  /* 信号监视器面板外壳 */
+  .scope-card {
+    background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 440px;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(0, 255, 102, 0.02);
+    transition: border-color 0.5s ease, box-shadow 0.5s ease;
+  }
+
+  .scope-card.active {
+    border-color: var(--border-lit);
+    box-shadow: 0 0 30px rgba(0, 255, 102, 0.15);
+  }
+
+  .scope-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .scope-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background:
+      repeating-linear-gradient(0deg, var(--grid) 0px, var(--grid) 1px, transparent 1px, transparent 20px),
+      repeating-linear-gradient(90deg, var(--grid) 0px, var(--grid) 1px, transparent 1px, transparent 20px);
+    position: relative;
+    min-height: 340px;
+  }
+
+  /* 模拟 CRT 扫描线和阴影 */
+  .scope-body::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 3px);
+    pointer-events: none;
+    opacity: 0.25;
+    mix-blend-mode: multiply;
+  }
+
+  canvas {
+    background: #ffffff; 
+    border: 1px solid var(--border);
+    display: block;
+    image-rendering: pixelated;
+    width: 280px;
+    height: 280px;
+  }
+
+  .placeholder {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.8;
+    position: absolute;
+    letter-spacing: 2px;
+    z-index: 5;
+    background: rgba(17, 22, 24, 0.85); 
+    padding: 10px 20px;
+    border: 1px dashed var(--border);
+    border-radius: 4px;
+  }
+
+  /* 底部公式与信息栏 */
+  .scope-footer {
+    padding: 14px 16px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-muted);
+    background: rgba(0, 0, 0, 0.2);
+    text-align: center;
+  }
+
+  .formula-box {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 14.5px;
+    letter-spacing: 0.5px;
+    color: var(--text);
+    text-shadow: 0 0 8px rgba(0, 255, 102, 0.3);
+    word-break: break-all;
+  }
+
+  /* 中间傅里叶变换算子 */
+  .arrow-operator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 120px;
+  }
+
+  .arrow-line {
+    width: 100px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--border) 0%, var(--border-lit) 50%, var(--border) 100%);
+    position: relative;
+  }
+
+  .arrow-line::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: -4px;
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 8px solid var(--border-lit);
+  }
+
+  .f-btn {
+    position: absolute;
+    width: 54px;
+    height: 54px;
+    background: #000000;
+    border: 2px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 50%;
+    font-size: 26px;
+    font-family: 'Georgia', serif;
+    font-style: italic;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    z-index: 10;
+  }
+
+  .f-btn:hover {
+    color: var(--border-lit);
+    border-color: var(--border-lit);
+    box-shadow: 0 0 20px rgba(0, 255, 102, 0.4);
+    transform: scale(1.08);
+  }
+
+  .f-btn:active {
+    transform: scale(0.95);
+  }
+
+  .f-btn.engaged {
+    background: var(--border-lit);
+    color: #031408;
+    border-color: var(--border-lit);
+    box-shadow: 0 0 25px rgba(0, 255, 102, 0.6);
+    cursor: not-allowed;
+  }
+
+  .op-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    margin-top: 36px;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body data-index="5">
+
+<div class="main-title">F is for Fourier Transform</div>
+
+<div class="container">
+
+  <div class="scope-card active" id="spatialCard">
+    <div class="scope-header">CH.1 — 时域图像 (Spatial Domain)</div>
+    <div class="scope-body">
+      <canvas id="canvasSpatial" width="300" height="300"></canvas>
+    </div>
+    <div class="scope-footer">
+      <div class="formula-box">
+        x(x,y) = sinc(x)(e<sup>j2πy</sup> + e<sup>j2π3y</sup> + e<sup>j2π5y</sup>) + sinc(y)e<sup>j2πx</sup>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-operator">
+    <button class="f-btn" id="transformBtn" onclick="triggerFourierTransform()">F</button>
+    <div class="arrow-line"></div>
+    <div class="op-label">FFT.EXEC</div>
+  </div>
+
+  <div class="scope-card" id="spectrumCard">
+    <div class="scope-header">CH.2 — 频域图像 (Frequency Domain)</div>
+    <div class="scope-body">
+      <div class="placeholder" id="spectrumPlaceholder">
+        SIGNAL STANDBY<br>等待 Fourier Transform...
+      </div>
+      <canvas id="canvasSpectrum" width="300" height="300" style="visibility: hidden;"></canvas>
+    </div>
+    <div class="scope-footer" style="letter-spacing: 1.5px; height: 45px; display: flex; align-items: center; justify-content: center;">
+      <span id="statusText">STATUS: IDLE // WHITE_MODE</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const rows = ["QWERTYUIOP","ASDFGHJKL","ZXCVBNM"];
+
+const kb = document.getElementById("keyboard");
+
+if(kb){
+  rows.forEach(r=>{
+    const div = document.createElement("div");
+    r.split("").forEach(ch=>{
+      const b = document.createElement("button");
+      b.innerText = ch;
+      b.onclick = ()=>pressKey(ch);
+      div.appendChild(b);
+    });
+    kb.appendChild(div);
+  });
+}
+const W = 300;
+const H = 300;
+const range = 6; 
+
+function sinc(x) {
+  if (Math.abs(x) < 1e-6) return 1;
+  return Math.sin(Math.PI * x) / (Math.PI * x);
+}
+
+function getSpatialSignal(x, y) {
+  let part1 = sinc(x) * (Math.cos(2 * Math.PI * y) + Math.cos(6 * Math.PI * y) + Math.cos(10 * Math.PI * y));
+  let part2 = sinc(y) * Math.cos(2 * Math.PI * x);
+  return part1 + part2;
+}
+
+function renderSpatialDomain() {
+  const canvas = document.getElementById('canvasSpatial');
+  const ctx = canvas.getContext('2d');
+  let img = ctx.createImageData(W, H);
+
+  for (let i = 0; i < W; i++) {
+    for (let j = 0; j < H; j++) {
+      let x = (i / W) * 2 * range - range;
+      let y = (range - (j / H) * 2 * range); 
+
+      let v = getSpatialSignal(x, y);
+      
+      let intensity = Math.max(0, Math.min(255, 160 + v * 85));
+      let idx = (j * W + i) * 4;
+
+      img.data[idx] = intensity;      
+      img.data[idx + 1] = intensity;  
+      img.data[idx + 2] = intensity;  
+      img.data[idx + 3] = 255;        
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+
+  ctx.strokeStyle = "rgba(0, 0, 0, 0.06)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2);
+  ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H);
+  ctx.stroke();
+}
+
+function triggerFourierTransform() {
+  const btn = document.getElementById('transformBtn');
+  if (btn.classList.contains('engaged')) return;
+
+  btn.classList.add('engaged');
+  document.getElementById('spectrumPlaceholder').style.display = 'none';
+  
+  const sCanvas = document.getElementById('canvasSpectrum');
+  sCanvas.style.visibility = 'visible';
+  
+  const sCtx = sCanvas.getContext('2d');
+  
+  sCtx.fillStyle = '#ffffff';
+  sCtx.fillRect(0, 0, W, H);
+
+  sCtx.strokeStyle = '#111111';
+  sCtx.lineWidth = 3;
+
+  document.getElementById('statusText').innerHTML = 'STATUS: RUNNING // ANALYZING...';
+
+  function freqToCanvasX(f) { return W / 2 + (f / range) * (W / 2); }
+  function freqToCanvasY(y) { return H / 2 - (y / range) * (H / 2); }
+
+  let step = 0;
+  function drawFrequencyLines() {
+    sCtx.beginPath();
+    
+    if (step === 0) {
+      sCtx.moveTo(freqToCanvasX(1), freqToCanvasY(1));
+      sCtx.lineTo(freqToCanvasX(5), freqToCanvasY(1));
+    } else if (step === 1) {
+      sCtx.moveTo(freqToCanvasX(1), freqToCanvasY(3));
+      sCtx.lineTo(freqToCanvasX(5), freqToCanvasY(3));
+    } else if (step === 2) {
+      sCtx.moveTo(freqToCanvasX(1), freqToCanvasY(5));
+      sCtx.lineTo(freqToCanvasX(5), freqToCanvasY(5));
+    } else if (step === 3) {
+      sCtx.moveTo(freqToCanvasX(1), freqToCanvasY(1));
+      sCtx.lineTo(freqToCanvasX(1), freqToCanvasY(5));
+    }
+
+    sCtx.stroke();
+    step++;
+
+    if (step <= 3) {
+      setTimeout(drawFrequencyLines, 220); 
+    } else {
+      document.getElementById('spectrumCard').classList.add('active');
+      document.getElementById('statusText').innerHTML = '✓ CONVERSION COMPLETE // COORD LOCKED';
+      
+      sCtx.strokeStyle = "rgba(0, 0, 0, 0.04)";
+      sCtx.lineWidth = 1;
+      for(let g = -5; g <= 5; g++) {
+        if(g === 0) continue;
+        sCtx.beginPath();
+        sCtx.moveTo(0, freqToCanvasY(g)); sCtx.lineTo(W, freqToCanvasY(g));
+        sCtx.moveTo(freqToCanvasX(g), 0); sCtx.lineTo(freqToCanvasX(g), H);
+        sCtx.stroke();
+      }
+    }
+  }
+
+  setTimeout(drawFrequencyLines, 150);
+}
+
+window.onload = function() {
+  renderSpatialDomain();
+};
+</script>
+<script>
+const pageList = [
+  "A is for Amplitude Modulation.html",
+  "B is for Binary.html",
+  "C is for Convolution.html",
+  "D is for DIscrete Sampling.html",
+  "E is for Error Correcting.html",
+  "F is for Fourier Transform.html"
+];
+
+const answer = ["M","A","T","A","N","E"];
+
+// 当前页面编号（0~5）
+const pageIndex = Number(document.body.dataset.index);
+
+// 读取已存密码
+let code = JSON.parse(localStorage.getItem("arg_code") || "[]");
+
+// 初始化UI
+function renderBoxes(){
+  for(let i=0;i<6;i++){
+    const el = document.getElementById("b"+i);
+    if(el) el.innerText = code[i] || "";
+  }
+}
+
+// 错误提示
+function error(){
+  alert("Error");
+}
+
+// 点击字母
+function pressKey(letter){
+  const expected = answer[pageIndex];
+
+  if(letter !== expected){
+    error();
+    return;
+  }
+
+  code[pageIndex] = letter;
+  localStorage.setItem("arg_code", JSON.stringify(code));
+  renderBoxes();
+
+  setTimeout(()=>{
+    if(pageIndex < 5){
+      window.location.href = pageList[pageIndex + 1];
+    } else {
+      window.location.href = "Appreciation.html";
+    }
+  }, 500);
+}
+
+window.onload = renderBoxes;
+</script>
+</body>
+</html>

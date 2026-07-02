@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B is for Binary</title>
+
+<div id="codeBox">
+  <div class="box" id="b0"></div>
+  <div class="box" id="b1"></div>
+  <div class="box" id="b2"></div>
+  <div class="box" id="b3"></div>
+  <div class="box" id="b4"></div>
+  <div class="box" id="b5"></div>
+</div>
+
+<div id="keyboard"></div>
+    <style>
+#codeBox{
+  display:flex;
+  gap:10px;
+  margin:20px 0;
+  justify-content:center;
+}
+
+.box{
+  width:42px;
+  height:42px;
+  border:1px solid #00ff66;
+  color:#00ff66;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+}
+#keyboard{
+  margin-top:20px;
+  text-align:center;
+}
+
+#keyboard button{
+  margin:3px;
+  padding:8px 10px;
+  background:black;
+  border:1px solid #00ff66;
+  color:#00ff66;
+  cursor:pointer;
+}
+        body {
+            background-color: #0e0e10;
+            color: #00ff66; /* 科技绿 */
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+
+        /* 动画文字主体 */
+        .text-container {
+            font-size: 3rem;
+            font-weight: bold;
+            text-align: center;
+            position: relative;
+            height: 120px; 
+            margin-bottom: 40px; 
+        }
+
+        .text-display {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            display: none; /* 默认完全隐藏，不占空间 */
+        }
+
+        /* 当有 active 类时才显示，无任何淡入淡出，硬切 */
+        .text-display.active {
+            display: block;
+        }
+
+        /* ASCII 表格样式 */
+        .ascii-section {
+            border: 1px solid #00ff66;
+            border-radius: 6px;
+            padding: 15px;
+            background: rgba(0, 255, 102, 0.03);
+            max-width: 900px;
+        }
+
+        .ascii-section h3 {
+            margin-top: 0;
+            text-align: center;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            border-bottom: 1px dashed #00ff66;
+            padding-bottom: 10px;
+        }
+
+        .ascii-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 12px;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        .ascii-item {
+            border: 1px solid rgba(0, 255, 102, 0.3);
+            padding: 6px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .dec { color: #888; }
+        .char { color: #00ff66; font-weight: bold; }
+    </style>
+</head>
+<body data-index="1">
+
+    <div class="text-container">
+        <div id="flashText" class="text-display"></div>
+    </div>
+
+    <div class="ascii-section">
+        <h3>ASCII TABLE (A - Z)</h3>
+        <div class="ascii-grid" id="asciiGrid"></div>
+    </div>
+
+    <script>
+const rows = ["QWERTYUIOP","ASDFGHJKL","ZXCVBNM"];
+
+const kb = document.getElementById("keyboard");
+
+if(kb){
+  rows.forEach(r=>{
+    const div = document.createElement("div");
+    r.split("").forEach(ch=>{
+      const b = document.createElement("button");
+      b.innerText = ch;
+      b.onclick = ()=>pressKey(ch);
+      div.appendChild(b);
+    });
+    kb.appendChild(div);
+  });
+}
+        /* ================= 1. 自动生成 ASCII 表 ================= */
+        const grid = document.getElementById('asciiGrid');
+        let htmlContent = '';
+        for (let i = 65; i <= 90; i++) {
+            let character = String.fromCharCode(i);
+            htmlContent += `
+                <div class="ascii-item">
+                    <span class="dec">${i}</span> → <span class="char">${character}</span>
+                </div>
+            `;
+        }
+        grid.innerHTML = htmlContent;
+
+        /* ================= 2. 精准时间驱动引擎 ================= */
+        const textElement = document.getElementById('flashText');
+
+        // 在这里定义你的乐谱流程（内容，持续毫秒数）
+        const timeline = [
+            // 8次 B is for Binary 的闪烁
+            { text: "B is for Binary", duration: 200 },  // 第1次：亮0.2秒
+            { text: "",                duration: 100 },  // 消失0.1秒
+            { text: "B is for Binary", duration: 700 },  // 第2次：亮0.7秒 (已修改)
+            { text: "",                duration: 100 },  // 消失0.1秒
+            { text: "B is for Binary", duration: 200 },  // 第3次：亮0.2秒
+            { text: "",                duration: 100 },  // 消失0.1秒
+            { text: "B is for Binary", duration: 200 },  // 第4次：亮0.2秒
+            { text: "",                duration: 100 },  // 消失0.1秒
+            { text: "B is for Binary", duration: 200 },  // 第5次：亮0.2秒
+            { text: "",                duration: 100 },  // 消失0.1秒
+            { text: "B is for Binary", duration: 200 },  // 第6次：亮0.2秒
+            { text: "",                duration: 100 },  // 消失0.1秒
+            { text: "B is for Binary", duration: 200 },  // 第7次：亮0.2秒
+            { text: "",                duration: 100 },  // 消失0.1秒
+            { text: "B is for Binary", duration: 700 },  // 第8次：亮0.7秒 (已修改)
+            { text: "",                duration: 100 },  // 消失0.1秒
+
+            // 替换为下文
+            { text: "What do you see", duration: 1000 }, // 亮1.0秒
+            { text: "",                duration: 200 }   // 新周期开启前留白0.2秒 (已修改)
+        ];
+
+        let currentIndex = 0;
+
+        function runTimeline() {
+            const currentStep = timeline[currentIndex];
+
+            if (currentStep.text === "") {
+                // 如果是空文本，隐藏节点
+                textElement.classList.remove('active');
+            } else {
+                // 如果有文本，更新文字并显示
+                textElement.innerText = currentStep.text;
+                textElement.classList.add('active');
+            }
+
+            // 根据当前步骤的持续时间，延时精准触发下一步
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % timeline.length; // 步进，到头了自动回0循环
+                runTimeline();
+            }, currentStep.duration);
+        }
+
+        // 启动动画
+        runTimeline();
+    </script>
+<script>
+const pageList = [
+  "A is for Amplitude Modulation.html",
+  "B is for Binary.html",
+  "C is for Convolution.html",
+  "D is for DIscrete Sampling.html",
+  "E is for Error Correcting.html",
+  "F is for Fourier Transform.html"
+];
+
+const answer = ["M","A","T","A","N","E"];
+
+// 当前页面编号（0~5）
+const pageIndex = Number(document.body.dataset.index);
+
+// 读取已存密码
+let code = JSON.parse(localStorage.getItem("arg_code") || "[]");
+
+// 初始化UI
+function renderBoxes(){
+  for(let i=0;i<6;i++){
+    const el = document.getElementById("b"+i);
+    if(el) el.innerText = code[i] || "";
+  }
+}
+
+// 错误提示
+function error(){
+  alert("Error");
+}
+
+// 点击字母
+function pressKey(letter){
+  const expected = answer[pageIndex];
+
+  if(letter !== expected){
+    error();
+    return;
+  }
+
+  code[pageIndex] = letter;
+  localStorage.setItem("arg_code", JSON.stringify(code));
+  renderBoxes();
+
+  setTimeout(()=>{
+    if(pageIndex < 5){
+      window.location.href = pageList[pageIndex + 1];
+    } else {
+      window.location.href = "Appreciation.html";
+    }
+  }, 500);
+}
+
+window.onload = renderBoxes;
+</script>
+</body>
+</html>

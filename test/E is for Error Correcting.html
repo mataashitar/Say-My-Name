@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E is for Error Correcting</title>
+<div id="codeBox">
+  <div class="box" id="b0"></div>
+  <div class="box" id="b1"></div>
+  <div class="box" id="b2"></div>
+  <div class="box" id="b3"></div>
+  <div class="box" id="b4"></div>
+  <div class="box" id="b5"></div>
+<div id="keyboard"></div>
+</div>
+    <style>
+#codeBox{
+  display:flex;
+  gap:10px;
+  margin:20px 0;
+  justify-content:center;
+}
+
+.box{
+  width:42px;
+  height:42px;
+  border:1px solid #00ff66;
+  color:#00ff66;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+}
+#keyboard{
+  margin-top:20px;
+  text-align:center;
+}
+
+#keyboard button{
+  margin:3px;
+  padding:8px 10px;
+  background:black;
+  border:1px solid #00ff66;
+  color:#00ff66;
+  cursor:pointer;
+}
+        body {
+            background-color: #0e0e10;
+            color: #00ff66;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            box-sizing: border-box;
+            padding: 80px 20px 40px 20px;
+        }
+
+        .main-title {
+            font-size: 2.6rem;
+            font-weight: bold;
+            color: #00aa44;
+            margin-bottom: 80px;
+            letter-spacing: 2px;
+            user-select: none;
+            text-shadow: 0 0 15px rgba(0, 170, 68, 0.2);
+        }
+
+        .clickable-word {
+            color: #00ff66;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .clickable-word:hover {
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+        }
+
+        /* 🚨 强化版闪烁提示：0.8秒高频电子波闪烁 */
+        .clickable-word.hint-blink {
+            animation: intense-blink 0.8s infinite steps(2, start);
+        }
+
+        @keyframes intense-blink {
+            0%, 100% {
+                color: #00aa44; /* 变回暗绿 */
+                text-shadow: none;
+            }
+            50% {
+                color: #00ff66; /* 瞬间激活刺眼高亮绿 */
+                text-shadow: 0 0 20px rgba(0, 255, 102, 0.9), 0 0 30px rgba(0, 255, 102, 0.4);
+            }
+        }
+
+        .password-zone {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .password-text {
+            font-size: 3.2rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(0, 255, 102, 0.3);
+            user-select: none;
+        }
+
+        #passwordLetter.fixed {
+            color: #ff3366 !important;
+            text-shadow: 0 0 15px rgba(255, 51, 102, 0.6);
+        }
+
+        .binary-proof {
+            color: #00aa44;
+            margin-left: 15px;
+        }
+
+        .underline-segment {
+            border-bottom: 2px solid #00aa44;
+            padding-bottom: 4px;
+            display: inline-block;
+        }
+
+        .target-bit {
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+
+        .target-bit.ready {
+            cursor: pointer;
+        }
+        
+        .target-bit.ready:hover {
+            color: #ffffff;
+            text-shadow: 0 0 8px #ffffff;
+        }
+
+        .target-bit.flipped {
+            color: #ff3366 !important;
+            text-shadow: 0 0 10px rgba(255, 51, 102, 0.6);
+            cursor: default !important;
+        }
+
+        .hidden-trigger {
+            display: inline-block;
+            color: transparent;
+            cursor: pointer;
+            transition: color 0.15s ease;
+            margin-left: 10px;
+        }
+
+        .hidden-trigger:hover {
+            color: #444444; 
+        }
+
+        .hidden-trigger.active {
+            color: #ff3366 !important;
+            text-shadow: 0 0 10px rgba(255, 51, 102, 0.5);
+            cursor: default;
+        }
+
+        .math-panel {
+            display: none;
+            width: 100%;
+            max-width: 650px;
+            background: rgba(0, 255, 102, 0.02);
+            border: 1px solid #004411;
+            border-radius: 6px;
+            padding: 25px;
+            box-sizing: border-box;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .formula-box {
+            font-size: 1.25rem;
+            line-height: 2;
+            color: #a0a0a0;
+        }
+
+        .formula-line {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body data-index="4">
+
+    <div class="main-title">
+        E is for <span id="hintWord" class="clickable-word" onclick="revealMath()">Error Correcting</span>
+    </div>
+
+    <div class="password-zone">
+        <div class="password-text">
+            THE PASSWORD IS <span id="passwordLetter">J</span> 
+            <span class="binary-proof">(0<span class="underline-segment">1001<span id="bit0" class="target-bit" onclick="flipBit()">0</span>10</span>)</span><span class="hidden-trigger" id="trigger" onclick="revealQuestion()">?</span>
+        </div>
+    </div>
+
+    <div class="math-panel" id="mathPanel">
+        <div class="formula-box">
+            <div class="formula-line">（7,4）卷积码 g(x)=x³+x+1</div>
+            <div class="formula-line">s(x) = y(x)/g(x) = x<sup>i</sup> mod g(x)</div>
+            <div class="formula-line" style="color: #ff3366; font-weight: bold;">第i位电平反转</div>
+        </div>
+    </div>
+
+    <script>
+const rows = ["QWERTYUIOP","ASDFGHJKL","ZXCVBNM"];
+
+const kb = document.getElementById("keyboard");
+
+if(kb){
+  rows.forEach(r=>{
+    const div = document.createElement("div");
+    r.split("").forEach(ch=>{
+      const b = document.createElement("button");
+      b.innerText = ch;
+      b.onclick = ()=>pressKey(ch);
+      div.appendChild(b);
+    });
+    kb.appendChild(div);
+  });
+}
+        let mathRevealed = false;
+        let isFlipped = false;
+
+        // ⏱️ 20秒未触发则强力闪烁
+        const hintTimeout = setTimeout(() => {
+            if (!mathRevealed) {
+                document.getElementById('hintWord').classList.add('hint-blink');
+            }
+        }, 20000);
+
+        function revealQuestion() {
+            const trigger = document.getElementById('trigger');
+            trigger.classList.add('active');
+        }
+
+        function revealMath() {
+            clearTimeout(hintTimeout);
+            document.getElementById('hintWord').classList.remove('hint-blink');
+
+            const panel = document.getElementById('mathPanel');
+            panel.style.display = 'block';
+            mathRevealed = true;
+            if (!isFlipped) {
+                document.getElementById('bit0').classList.add('ready');
+            }
+        }
+
+        function flipBit() {
+            if (!mathRevealed || isFlipped) return;
+
+            isFlipped = true;
+            const bit = document.getElementById('bit0');
+            const letter = document.getElementById('passwordLetter');
+
+            bit.innerHTML = "1";
+            bit.className = "target-bit flipped";
+
+            letter.innerHTML = "N";
+            letter.className = "fixed";
+        }
+    </script>
+<script>
+const pageList = [
+  "A is for Amplitude Modulation.html",
+  "B is for Binary.html",
+  "C is for Convolution.html",
+  "D is for DIscrete Sampling.html",
+  "E is for Error Correcting.html",
+  "F is for Fourier Transform.html"
+];
+
+const answer = ["M","A","T","A","N","E"];
+
+// 当前页面编号（0~5）
+const pageIndex = Number(document.body.dataset.index);
+
+// 读取已存密码
+let code = JSON.parse(localStorage.getItem("arg_code") || "[]");
+
+// 初始化UI
+function renderBoxes(){
+  for(let i=0;i<6;i++){
+    const el = document.getElementById("b"+i);
+    if(el) el.innerText = code[i] || "";
+  }
+}
+
+// 错误提示
+function error(){
+  alert("Error");
+}
+
+// 点击字母
+function pressKey(letter){
+  const expected = answer[pageIndex];
+
+  if(letter !== expected){
+    error();
+    return;
+  }
+
+  code[pageIndex] = letter;
+  localStorage.setItem("arg_code", JSON.stringify(code));
+  renderBoxes();
+
+  setTimeout(()=>{
+    if(pageIndex < 5){
+      window.location.href = pageList[pageIndex + 1];
+    } else {
+      window.location.href = "Appreciation.html";
+    }
+  }, 500);
+}
+
+window.onload = renderBoxes;
+</script>
+</body>
+</html>
